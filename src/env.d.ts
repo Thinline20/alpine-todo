@@ -6,3 +6,7 @@ declare namespace App {
     user: import("lucia").User | null;
   }
 }
+
+interface Window {
+  Alpine: import("alpinejs").Alpine;
+}
