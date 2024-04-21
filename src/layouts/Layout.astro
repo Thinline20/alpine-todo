@@ -1,4 +1,7 @@
 ---
+import Navbar from "~/components/Navbar.astro";
+import "~/styles/global.css";
+
 type Props = {
   title?: string;
 };
@@ -6,7 +9,12 @@ type Props = {
 const { title = "Alpine Todos" } = Astro.props;
 ---
 
-<html lang="en">
+<html
+  lang="en"
+  x-data="{theme: $persist(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')}"
+  x-cloak
+  x-bind:data-theme="theme"
+>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -15,6 +23,7 @@ const { title = "Alpine Todos" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <Navbar />
     <slot />
   </body>
   <script src="~/scripts/alpine.ts"></script>

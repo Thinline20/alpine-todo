@@ -1,0 +1,42 @@
+---
+import Sun from "./icons/lucide/Sun.astro";
+import Moon from "./icons/lucide/Moon.astro";
+import Computer from "./icons/lucide/Computer.astro";
+---
+
+<header>
+  <nav class="lg-px-6 flex justify-between p-4">
+    <div>
+      <a class="btn btn-ghost text-xl" href="/">TODO</a>
+    </div>
+    <div>
+      <details
+        id="theme"
+        class="dropdown dropdown-end"
+        x-on:click.outside="document.getElementById('theme').removeAttribute('open')"
+      >
+        <summary class="btn btn-ghost m-1">
+          <Sun class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+          <Moon
+            class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100"
+          />
+          <span class="sr-only">Change theme</span>
+        </summary>
+        <ul class="menu dropdown-content bg-base-100 rounded-box z-[1] w-32 p-2 shadow">
+          <li>
+            <button x-on:click="theme='light'"><Sun class="h-[1.2rem] w-[1.2rem]" /><span>Light</span></button>
+          </li>
+          <li>
+            <button x-on:click="theme='dark'"><Moon class="h-[1.2rem] w-[1.2rem]" /><span>Dark</span></button>
+          </li>
+          <li>
+            <button x-on:click="theme=window.matchMedia('(prefers-color-scheme: dark)')?'dark':'light'">
+              <Computer class="h-[1.2rem] w-[1.2rem]" />
+              <span>System</span>
+            </button>
+          </li>
+        </ul>
+      </details>
+    </div>
+  </nav>
+</header>
