@@ -2,9 +2,10 @@
 import Layout from "~/layouts/Layout.astro";
 
 const session = Astro.locals.session;
+const user = Astro.locals.user;
 
-if (session === null) {
-  Astro.redirect("/auth/login");
+if (user === null || session === null) {
+  return Astro.redirect("/auth/login");
 }
 ---
 
