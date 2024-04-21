@@ -10,21 +10,28 @@ if (session !== null) {
 
 <Layout>
   <main>
-    <div>
+    <div class="ring-base-200 rounded-box mx-auto mt-8 w-full max-w-lg p-8 shadow-md ring-1">
+      <h1 class="text-center text-2xl font-bold">Login</h1>
       <form>
-        <div>
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" required />
+        <div class="flex flex-col">
+          <label class="label label-text" for="username">Username</label>
+          <input class="input input-bordered" type="text" id="username" name="username" required />
         </div>
-        <div>
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required />
+        <div class="flex flex-col">
+          <label class="label label-text" for="password">Password</label>
+          <input class="input input-bordered" type="password" id="password" name="password" required />
         </div>
-        <div>
-          <button type="reset">Reset</button>
-          <button type="submit">Login</button>
+        <div class="mt-6 flex justify-end gap-4">
+          <button class="btn" type="reset">Reset</button>
+          <button class="btn btn-primary" type="submit">Login</button>
         </div>
       </form>
+      <div class="divider"></div>
+      <div class="flex justify-end">
+        <p>
+          Don't have an account? <a class="link link-primary" href="/auth/signup">Signup!</a>
+        </p>
+      </div>
     </div>
   </main>
 </Layout>
