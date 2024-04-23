@@ -15,8 +15,6 @@ export const sessions = sqliteTable("sessions", {
     .notNull()
     .references(() => users.id),
   expiresAt: integer("expires_at").notNull(),
-  name: text("name").notNull(),
-  email: text("email"),
 });
 
 export type Session = typeof sessions.$inferSelect;
