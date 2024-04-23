@@ -2,6 +2,7 @@
 export const partial = true;
 
 import { Effect } from "effect";
+import { eq } from "drizzle-orm"
 
 import { db } from "~/server/db";
 import { NetworkError } from "~/lib/error";
@@ -14,10 +15,24 @@ if (!user) {
 
 function getTodos() {
   return Effect.tryPromise({
-    try: () =>
-    catch: () => new NetworkError();
+    try: () => db.query.todos.findMany({
+      with: {
+        users: {
+          where: {
+            eq(users)
+          }
+        }
+      }
+    }),
+    catch: () => new NetworkError(),
   });
 }
 ---
 
-<div x-data="{ todos: [] }"></div>
+<div id="todo-list" x-data="{ todos: [1, 2, 3] }">
+  <template x-for="todo in todos">
+    <div>
+      <h3 x-text="todo"></h3>
+    </div>
+  </template>
+</div>

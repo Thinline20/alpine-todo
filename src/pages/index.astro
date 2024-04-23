@@ -1,14 +1,58 @@
 ---
 import Layout from "~/layouts/Layout.astro";
 
-const session = Astro.locals.session;
 const user = Astro.locals.user;
 
-if (user === null || session === null) {
+if (user === null) {
   return Astro.redirect("/auth/login");
 }
 ---
 
 <Layout>
-  <div>hello</div>
+  <main x-data="{ todos: [] }">
+    <div class="lg:px:-6 flex flex-col p-4 2xl:flex-row">
+      <div class="2xl:w-96">
+        <h2 class="text-center text-xl font-semibold">Create Todo</h2>
+        <form class="mt-6" id="todo-submit-form" action="/partials/todo-list" method="post" x-init x-target="todo-list">
+          <div>
+            <label class="label label-text" for="todo">TODO</label>
+            <input class="input input-bordered w-full" type="text" name="todo" id="todo" />
+          </div>
+          <div class="mt-4">
+            <label class="label label-text" for="description">Description</label>
+            <textarea
+              class="textarea textarea-bordered max-h-96 w-full resize-none"
+              name="description"
+              id="description"
+              x-data
+              x-autosize></textarea>
+          </div>
+          <div class="mt-4">
+            <label class="label label-text" for="tags">Tags</label>
+            <div>
+              <select class="select select-bordered w-full" multiple x-data="{ tags: [] }">
+                <template x-for="tag in [1, 2, 3, 4, 5]">
+                  <option x-text="tag" x-bind:value="tag" x-bind:selected="tags.includes(tag)"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+          <div></div>
+        </form>
+      </div>
+      <div>
+        <h2>Todos</h2>
+        <div id="todo-list" x-data="{ todos: [] }">
+          <template x-for="todo in todos">
+            <div>
+              <h3 x-text="todo"></h3>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </main>
 </Layout>
