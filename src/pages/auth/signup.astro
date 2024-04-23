@@ -1,19 +1,49 @@
 ---
 import Layout from "~/layouts/Layout.astro";
+
+const user = Astro.locals.user;
+
+if (user !== null) {
+  return Astro.redirect("/");
+}
 ---
 
 <Layout>
   <main>
-    <div class="ring-base-200 rounded-box mx-auto mt-8 w-full max-w-lg p-8 shadow-md ring-1">
-      <h1 class="text-center text-2xl font-bold">Login</h1>
-      <form>
+    <div class="mx-auto mt-8 w-full max-w-lg rounded-box p-8 shadow-md ring-1 ring-base-200">
+      <h1 class="text-center text-2xl font-bold">Sign up</h1>
+      <form
+        action="/api/auth/signup"
+        method="post"
+        x-on:submit.prevent="const res = await fetch(event.target.action, { method: 'POST', body: new FormData(event.target) });if (res.status === 200) { window.location.href = '/' } else { alert(`Cannot create new account!\n${await res.text()}`) }"
+      >
         <div class="flex flex-col">
           <label class="label label-text" for="username">Username</label>
-          <input class="input input-bordered" type="text" id="username" name="username" required />
+          <input
+            class="input input-bordered"
+            type="text"
+            id="username"
+            name="username"
+            required
+            minlength="3"
+            maxlength="31"
+            title="Only letters, numbers, underscores, and hyphens are allowed."
+            autocomplete="username"
+          />
         </div>
         <div class="flex flex-col">
           <label class="label label-text" for="password">Password</label>
-          <input class="input input-bordered" type="password" id="password" name="password" required />
+          <input
+            class="input input-bordered"
+            type="password"
+            id="password"
+            name="password"
+            required
+            minlength="8"
+            maxlength"255"
+            title="Password must be at least 8 characters long and contain at least one number and one lowercase letter and one uppercase letter."
+            autocomplete="current-password"
+          />
         </div>
         <div class="flex flex-col">
           <label class="label label-text" for="email">Email</label>
@@ -21,13 +51,13 @@ import Layout from "~/layouts/Layout.astro";
         </div>
         <div class="mt-6 flex justify-end gap-4">
           <button class="btn" type="reset">Reset</button>
-          <button class="btn btn-primary" type="submit">Login</button>
+          <button class="btn btn-primary" type="submit">Signup</button>
         </div>
       </form>
       <div class="divider"></div>
       <div class="flex justify-end">
         <p>
-          Already have an account? <a href="/auth/login" class="link link-primary">Register</a>
+          Already have an account? <a href="/auth/login" class="link link-primary">Log in!</a>
         </p>
       </div>
     </div>
