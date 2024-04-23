@@ -1,5 +1,5 @@
 import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
-import { Lucia } from "lucia";
+import { Lucia, type DatabaseUser } from "lucia";
 import { env } from "~/lib/env";
 
 import { db } from "~/server/db";
@@ -14,10 +14,18 @@ export const lucia = new Lucia(adapter, {
       secure: env.NODE_ENV === "production",
     },
   },
+  getUserAttributes: (attributes) => {
+    return {};
+  },
 });
 
 declare module "lucia" {
   interface Register {
     Lucia: typeof lucia;
+    DatabaseUserAttributes: DatabaseUserAttributes;
   }
 }
+
+type DatabaseUserAttributes = {
+  username: string;
+};
