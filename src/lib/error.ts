@@ -41,3 +41,12 @@ export class CannotInvalidateSessionError {
 export class IncorrectFormDataError {
   readonly _tag = "IncorrectFormDataError";
 }
+
+export class InvalidSessionError {
+  readonly _tag = "InvalidSessionError";
+}
+
+export class CannotCreateTodoError {
+  readonly _tag = "CannotCreateTodoError";
+}
+
