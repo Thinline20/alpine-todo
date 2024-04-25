@@ -1,22 +1,58 @@
 ---
+import { onMount } from "nanostores";
+import { eq } from "drizzle-orm";
+import { Effect, Exit } from "effect";
+
 import Layout from "~/layouts/Layout.astro";
+import { $todos } from "~/atoms/todos-atom";
+import { db } from "~/server/db";
+import { todos, users, type Todo } from "~/server/db/schema";
+import { NetworkError } from "~/lib/error";
 
 const user = Astro.locals.user;
 
 if (user === null) {
   return Astro.redirect("/auth/login");
 }
+
+function getTodos() {
+  return Effect.tryPromise({
+    try: () =>
+      db.query.todos.findMany({
+        where: eq(todos.userId, user!.id),
+      }),
+    catch: () => new NetworkError(),
+  });
+}
+
+Effect.runPromiseExit(getTodos()).then((value) => {
+  return Exit.match(value, {
+    onFailure: (cause) => {
+      console.error(`Exited with failure: ${cause}`);
+    },
+    onSuccess: (value) => {
+      $todos.set(value);
+    },
+  });
+});
 ---
 
 <Layout>
-  <main x-data="{ todos: [] }">
+  <main>
     <div class="lg:px:-6 flex flex-col p-4 2xl:flex-row">
       <div class="2xl:w-96">
         <h2 class="text-center text-xl font-semibold">Create Todo</h2>
-        <form class="mt-6" id="todo-submit-form" action="/partials/todo-list" method="post" x-init x-target="todo-list">
+        <form
+          class="mt-6"
+          id="todo-submit-form"
+          action="/partials/create-todo"
+          method="post"
+          x-init
+          x-target="todo-list"
+        >
           <div>
             <label class="label label-text" for="todo">TODO</label>
-            <input class="input input-bordered w-full" type="text" name="todo" id="todo" />
+            <input class="input input-bordered w-full" type="text" name="title" id="title" />
           </div>
           <div class="mt-4">
             <label class="label label-text" for="description">Description</label>
@@ -43,15 +79,8 @@ if (user === null) {
           <div></div>
         </form>
       </div>
-      <div>
-        <h2>Todos</h2>
-        <div id="todo-list" x-data="{ todos: [] }">
-          <template x-for="todo in todos">
-            <div>
-              <h3 x-text="todo"></h3>
-            </div>
-          </template>
-        </div>
+      <div class="flex-1">
+        <div id="todo-list" x-target x-init="$ajax('/partials/get-todos', { method: 'post' })"></div>
       </div>
     </div>
   </main>
