@@ -1,0 +1,85 @@
+---
+import type { Todo } from "~/server/db/schema";
+import Check from "./icons/lucide/Check.astro";
+import X from "./icons/lucide/X.astro";
+
+type Props = {
+  todo: Todo;
+};
+
+const { todo } = Astro.props;
+---
+
+<div x-data={`{ todo: ${JSON.stringify(todo)}, showModal: false }`}>
+  <div
+    class="shadow-mdtransition-all dark:hover:ring-neutral-10 group relative w-full cursor-pointer rounded-md border p-4 ring-neutral/40 ring-offset-2 duration-75 ease-in-out hover:ring-2"
+    id={todo.id}
+    x-bind:class="todo.completed ? 'border-success' : ''"
+    x-on:click="showModal = true"
+  >
+    <form
+      action="/partials/remove-todo"
+      method="post"
+      x-init
+      x-target="todo-list"
+      @ajax:error="alert(`Cannot remove todo!\n${$event.detail.html}`)"
+    >
+      <button class="btn btn-square btn-ghost btn-sm absolute right-1 top-1" x-on:click.stop="">
+        <X />
+      </button>
+      <input type="hidden" name="todo-id" value={todo.id} />
+    </form>
+    <h2 class="w-full text-xl md:text-2xl" x-text="todo.title"></h2>
+    <p x-text="todo.description"></p>
+    <div class="mt-2 flex justify-end">
+      <form action="/partials/toggle-todo" method="post" x-init x-target={todo.id}>
+        <template x-if="todo.completed">
+          <div>
+            <button type="submit" class="btn btn-square hover:btn-error">
+              <X />
+            </button>
+            <button type="button" class="btn btn-square btn-success no-animation">
+              <Check />
+            </button>
+          </div>
+        </template>
+        <template x-if="!todo.completed">
+          <div>
+            <button type="button" class="btn btn-square btn-error no-animation">
+              <X />
+            </button>
+            <button type="submit" class="btn btn-square hover:btn-success">
+              <Check />
+            </button>
+          </div>
+        </template>
+        <input type="hidden" name="id" value={todo.id} />
+        <input type="hidden" name="completed" x-bind:value="todo.completed ? 'true' : 'false'" />
+      </form>
+    </div>
+  </div>
+  <div
+    class="overflow-auto bg-base-300 bg-opacity-50"
+    x-show="showModal"
+    x-bind:class="{'fixed inset-0 z-10 grid place-content-center': showModal}"
+    x-data={`{ newTodo: ${JSON.stringify(todo)} }`}
+  >
+    <div class="relative rounded-md border bg-base-100 p-6 shadow-md" x-on:click.away="showModal = false">
+      <button class="btn btn-square btn-ghost btn-sm absolute right-1 top-1" x-on:click="showModal = false">
+        <X />
+      </button>
+      <div>
+        <form>
+          <div>
+            <label for="title" class="label">Title</label>
+            <input type="text" id="title" class="input" x-model="newTodo.title" />
+          </div>
+          <div>
+            <label for="description" class="label">Description</label>
+            <textarea id="description" class="input" x-model="newTodo.description"></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
