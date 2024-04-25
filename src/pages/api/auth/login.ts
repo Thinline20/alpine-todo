@@ -2,17 +2,13 @@ import type { APIContext } from "astro";
 import { Effect } from "effect";
 
 import { lucia } from "~/server/auth";
-import {
-  createSession,
-  getFormData,
-  ValidatePassword,
-  validateUsername,
-} from "./signup";
+import { createSession, ValidatePassword, validateUsername } from "./signup";
 import { Argon2id } from "oslo/password";
 import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
 import { users } from "~/server/db/schema";
 import { IncorrectFormDataError } from "~/lib/error";
+import { getFormData } from "~/lib/effects";
 
 export async function POST(context: APIContext) {
   const postProgram = Effect.gen(function* (_) {

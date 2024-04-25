@@ -14,6 +14,7 @@ import {
   NetworkError,
   CannotCreateSessionError,
 } from "~/lib/error";
+import { getFormData } from "~/lib/effects";
 import { lucia } from "~/server/auth";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema";
@@ -55,13 +56,6 @@ export async function POST(context: APIContext) {
   return Effect.runPromise(postProgram)
     .then((result) => result)
     .catch((error) => new Response(error, { status: 400 }));
-}
-
-export function getFormData(request: Request) {
-  return Effect.tryPromise({
-    try: () => request.formData(),
-    catch: () => new InvalidFormDataError(),
-  });
 }
 
 export function validateUsername(
