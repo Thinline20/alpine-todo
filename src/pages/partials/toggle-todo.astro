@@ -1,0 +1,60 @@
+---
+export const partial = true;
+
+import { Effect } from "effect";
+import { eq } from "drizzle-orm";
+
+import { $getTodoById, $toggleTodo } from "~/atoms/todos-atom";
+import Todo from "~/components/Todo.astro";
+import { db } from "~/server/db";
+import { todos } from "~/server/db/schema";
+import { NetworkError } from "~/lib/error";
+
+const formData = await Astro.request.formData();
+const todoId = formData.get("id")?.toString();
+const completed = !(formData.get("completed") === "true");
+
+class NoTodoIdError {
+  readonly _tag = "NoTodoIdError";
+}
+
+class TodoNotFoundError {
+  readonly _tag = "TodoNotFoundError";
+}
+
+const program = Effect.gen(function* (_) {
+  if (todoId === null) {
+    yield* _(Effect.fail(new NoTodoIdError()));
+  }
+
+  const todo = $getTodoById(todoId!);
+
+  if (todo === undefined) {
+    yield* _(Effect.fail(new TodoNotFoundError()));
+  }
+
+  const res = yield* _(toggleTodo(todoId!, completed));
+
+  $toggleTodo(todoId!, completed)
+
+  return res[0];
+});
+
+function toggleTodo(todoId: string, completed: boolean) {
+  return Effect.tryPromise({
+    try: () => db.update(todos).set({ completed: completed }).where(eq(todos.id, todoId)).returning(),
+    catch: () => new NetworkError(),
+  });
+}
+
+const todo = await Effect.runPromise(program)
+  .then((res) => {
+    return res;
+  })
+  .catch((err) => {
+    console.error(err);
+    return $getTodoById(todoId!)!;
+  });
+---
+
+<Todo todo={todo} />
