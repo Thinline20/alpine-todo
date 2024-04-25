@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -25,13 +26,17 @@ export const todos = sqliteTable("todos", {
     .notNull()
     .references(() => users.id),
   title: text("title").notNull(),
-  completed: integer("completed", { mode: "boolean" }).notNull(),
-  descriptions: text("descriptions"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
+  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  description: text("description").default(""),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type Todo = typeof todos.$inferSelect;
+
+export type NewTodo = typeof todos.$inferInsert;
 
 export const tags = sqliteTable("tags", {
   id: text("id").notNull().primaryKey(),
@@ -39,6 +44,8 @@ export const tags = sqliteTable("tags", {
 });
 
 export type Tag = typeof tags.$inferSelect;
+
+export type NewTag = typeof tags.$inferInsert;
 
 export const todoTags = sqliteTable("todo_tags", {
   todoId: text("todo_id")
@@ -50,3 +57,5 @@ export const todoTags = sqliteTable("todo_tags", {
 });
 
 export type TodoTag = typeof todoTags.$inferSelect;
+
+export type NewTodoTag = typeof todoTags.$inferInsert;
