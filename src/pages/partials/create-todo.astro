@@ -1,0 +1,88 @@
+---
+export const partial = true;
+
+import { Effect, Exit } from "effect";
+
+import { db } from "~/server/db";
+import { todos, type NewTodo, todoTags, type NewTodoTag } from "~/server/db/schema";
+import { InvalidFormDataError, InvalidSessionError, NetworkError, CannotCreateTodoError } from "~/lib/error";
+import { generateId } from "lucia";
+import { $addTodo } from "~/atoms/todos-atom";
+
+const user = Astro.locals.user;
+
+const program = Effect.gen(function* (_) {
+  if (user === null) {
+    yield* _(Effect.fail(new InvalidSessionError()));
+  }
+
+  const formData = yield* _(getFormData());
+  console.log(formData);
+
+  console.log(1);
+  const title = yield* _(getTitle(formData));
+  const description = formData.get("description")?.toString();
+  const id = generateId(15);
+
+  const newTodo: NewTodo = {
+    id,
+    title,
+    description,
+    userId: user!.id,
+  };
+
+  const todo = yield* _(createTodo(newTodo));
+
+  if (todo.length === 0) {
+    yield* _(Effect.fail(new CannotCreateTodoError()));
+  }
+
+  const todoTags = formData.getAll("tags").map((tag) => ({ todoId: id, tagId: tag.toString() }) as NewTodoTag);
+
+  for (const todoTag of todoTags) {
+    yield* _(createTodoTag(todoTag));
+  }
+
+  return todo[0];
+});
+
+function getFormData() {
+  return Effect.tryPromise({
+    try: () => Astro.request.formData(),
+    catch: () => new InvalidFormDataError(),
+  });
+}
+
+function getTitle(formData: FormData): Effect.Effect<string, InvalidFormDataError> {
+  const title = formData.get("title");
+
+  return title === null ? Effect.fail(new InvalidFormDataError()) : Effect.succeed(title.toString());
+}
+
+function createTodo(todo: NewTodo) {
+  return Effect.tryPromise({
+    try: () => db.insert(todos).values(todo).returning(),
+    catch: () => new NetworkError(),
+  });
+}
+
+function createTodoTag(todoTag: NewTodoTag) {
+  return Effect.tryPromise({
+    try: () => db.insert(todoTags).values(todoTag),
+    catch: () => new NetworkError(),
+  });
+}
+
+const res = await Effect.runPromiseExit(program);
+
+Exit.match(res, {
+  onFailure: (cause) => {
+    console.log(`Cannot create new todo!\n${cause._tag}`);
+  },
+  onSuccess(value) {
+    $addTodo(value);
+  },
+});
+
+return Astro.redirect("/partials/get-todos");
+---
