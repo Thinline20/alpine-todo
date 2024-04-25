@@ -1,0 +1,61 @@
+---
+import { Effect } from "effect";
+import { eq } from "drizzle-orm";
+
+import { db } from "~/server/db";
+import { NetworkError } from "~/lib/error";
+import { todos, todoTags } from "~/server/db/schema";
+import { $removeTodo } from "~/atoms/todos-atom";
+
+export const partial = true;
+
+const user = Astro.locals.user;
+
+if (!user) {
+  throw new Error("User not found");
+}
+
+const formData = await Astro.request.formData();
+const todoId = formData.get("todo-id")?.toString();
+
+const program = Effect.gen(function* (_) {
+  if (todoId === undefined) {
+    yield* _(Effect.fail(new NoTodoIdError()));
+  }
+
+  yield* _(removeTodo(todoId!));
+  yield* _(removeTodoTags(todoId!));
+
+  $removeTodo(todoId!);
+});
+
+class NoTodoIdError {
+  readonly _tag = "NoTodoIdError";
+}
+
+function removeTodo(todoId: string) {
+  return Effect.tryPromise({
+    try: () => db.delete(todos).where(eq(todos.id, todoId)),
+    catch: () => new NetworkError(),
+  });
+}
+
+function removeTodoTags(todoId: string) {
+  return Effect.tryPromise({
+    try: () => db.delete(todoTags).where(eq(todoTags.todoId, todoId)),
+    catch: () => new NetworkError(),
+  });
+}
+
+return await Effect.runPromise(program)
+  .then(() => {
+    return Astro.redirect("/partials/get-todos");
+  })
+  .catch((error) => {
+    console.error(error);
+
+    return new Response("Internal Server Error", {
+      status: 500,
+    });
+  });
+---
